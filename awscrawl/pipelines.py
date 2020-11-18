@@ -6,6 +6,7 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from scrapy.exceptions import DropItem
 import json
 
 class AwscrawlPipeline:
@@ -17,5 +18,8 @@ class AwscrawlPipeline:
 
     def process_item(self, item, spider):
         line = json.dumps(ItemAdapter(item).asdict(),ensure_ascii=False) + "\n"
-        self.file.write(line)
-        return item
+        if line.get('productName'):
+            self.file.write(line)
+            return item
+        else:
+            raise DropItem(f"Missing ProductName in {item}")
